@@ -1,9 +1,0 @@
-module mux_alu_input #(parameter W=5)(
-    input wire [W-1:0] read_data2, 
-    input wire [W-1:0] imm_data,   
-    input wire sel,                
-    output wire [W-1:0] alu_input  
-);
-
-    assign alu_input = (sel == 1'b0) ? read_data2 : imm_data; // Select read_data2 or imm_data
-endmodule

@@ -1,71 +1,90 @@
+`timescale 1ns / 1ps
+
 module control_unit(
-    input [6:0] opcode,           
-    output reg Branch,          
-    output reg MemRead,         
-    output reg MemtoReg,         
-    output reg [1:0] ALUOp,      
-    output reg MemWrite,        
-    output reg ALUSrc,           
-    output reg RegWrite          
+    input wire [6:0] opcode,  // 7-bit opcode from instruction
+    output reg branch,        
+    output reg memread,       
+    output reg memtoreg,      
+    output reg [1:0] aluop,   
+    output reg memwrite,      
+    output reg alusrc,        
+    output reg regwrite       
 );
 
     always @(*) begin
-        // Default values for all control signals
-        Branch    = 1'b0;
-        MemRead   = 1'b0;
-        MemtoReg  = 1'b0;
-        ALUOp     = 2'b00;
-        MemWrite  = 1'b0;
-        ALUSrc    = 1'b0;
-        RegWrite  = 1'b0;
+        // Default values (safe state)
+        branch    = 1'b0;
+        memread   = 1'b0;
+        memtoreg  = 1'b0;
+        aluop     = 2'b00;
+        memwrite  = 1'b0;
+        alusrc    = 1'b0;
+        regwrite  = 1'b0;
 
-        // Decode control signals based on opcode
         case (opcode)
-            7'b0110011: begin // R-type instruction
-                ALUSrc   = 1'b0;    
-                MemtoReg = 1'b0;   
-                RegWrite = 1'b1;    
-                MemRead  = 1'b0;    
-                MemWrite = 1'b0;    
-                Branch   = 1'b0;    
-                ALUOp    = 2'b10;   
+            7'b0110011: begin // R-type (ADD, SUB, AND, OR, etc.)
+                alusrc   = 1'b0;    
+                memtoreg = 1'b0;    
+                regwrite = 1'b1;    
+                memread  = 1'b0;    
+                memwrite = 1'b0;    
+                branch   = 1'b0;    
+                aluop    = 2'b10;   
             end
-            7'b0000011: begin // Load word (lw)
-                ALUSrc   = 1'b1;    
-                MemtoReg = 1'b1;    
-                RegWrite = 1'b1;    
-                MemRead  = 1'b1;    
-                MemWrite = 1'b0;    
-                Branch   = 1'b0;    
-                ALUOp    = 2'b00;   
+            7'b0000011: begin // Load Word (LW)
+                alusrc   = 1'b1;    
+                memtoreg = 1'b1;    
+                regwrite = 1'b1;    
+                memread  = 1'b1;    
+                memwrite = 1'b0;    
+                branch   = 1'b0;    
+                aluop    = 2'b00;   
             end
-            7'b0100011: begin // Store word (sw)
-                ALUSrc   = 1'b1;    
-                MemtoReg = 1'bX;    
-                RegWrite = 1'b0;    
-                MemRead  = 1'b0;    
-                MemWrite = 1'b1;    
-                Branch   = 1'b0;    
-                ALUOp    = 2'b00;   
+            7'b0100011: begin // Store Word (SW)
+                alusrc   = 1'b1;    
+                memtoreg = 1'b1;    // Store doesn't use MemtoReg
+                regwrite = 1'b0;    
+                memread  = 1'b0;    
+                memwrite = 1'b1;    
+                branch   = 1'b0;    
+                aluop    = 2'b00;   
             end
-            7'b1100011: begin // Branch equal (beq)
-                ALUSrc   = 1'b0;    
-                MemtoReg = 1'bX;    
-                RegWrite = 1'b0;    
-                MemRead  = 1'b0;    
-                MemWrite = 1'b0;    
-                Branch   = 1'b1;    
-                ALUOp    = 2'b01;   
+            7'b1100011: begin // Branch Equal (BEQ)
+                alusrc   = 1'b0;    
+                memtoreg = 1'b0;    // Branch doesn't use MemtoReg
+                regwrite = 1'b0;    
+                memread  = 1'b0;    
+                memwrite = 1'b0;    
+                branch   = 1'b1;    
+                aluop    = 2'b01;   
+            end
+            7'b0010011: begin // I-type ALU (ADDI, ANDI, ORI, etc.)
+                alusrc   = 1'b1;    
+                memtoreg = 1'b0;    
+                regwrite = 1'b1;    
+                memread  = 1'b0;    
+                memwrite = 1'b0;    
+                branch   = 1'b0;    
+                aluop    = 2'b10;   
+            end
+            7'b1101111: begin // Jump and Link (JAL)
+                alusrc   = 1'b1;    
+                memtoreg = 1'b0;    
+                regwrite = 1'b1;    
+                memread  = 1'b0;    
+                memwrite = 1'b0;    
+                branch   = 1'b1;    
+                aluop    = 2'b00;   
             end
             default: begin
-                // Default case ensures all signals are disabled
-                Branch    = 1'b0;
-                MemRead   = 1'b0;
-                MemtoReg  = 1'b0;
-                ALUOp     = 2'b00;
-                MemWrite  = 1'b0;
-                ALUSrc    = 1'b0;
-                RegWrite  = 1'b0;
+                // Ensure all control signals remain safe in unknown states
+                branch    = 1'b0;
+                memread   = 1'b0;
+                memtoreg  = 1'b0;
+                aluop     = 2'b00;
+                memwrite  = 1'b0;
+                alusrc    = 1'b0;
+                regwrite  = 1'b0;
             end
         endcase
     end
