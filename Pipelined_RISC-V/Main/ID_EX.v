@@ -18,6 +18,8 @@ module ID_EX(
     input [2:0] funct3,         
     input funct7,  
     input [4:0] rd,
+    input [4:0] rs1,
+    input [4:0] rs2,
     output reg branch_ID_EX,              
     output reg memread_ID_EX,             
     output reg memtoreg_ID_EX,            
@@ -31,7 +33,9 @@ module ID_EX(
     output reg [31:0] immout_ID_EX,       
     output reg [2:0] funct3_ID_EX,        
     output reg funct7_ID_EX,
-    output reg [4:0] rd_ID_EX    
+    output reg [4:0] rd_ID_EX, 
+    output reg [4:0] rs1_ID_EX,
+    output reg [4:0] rs2_ID_EX 
     );
     
     always @(posedge clk, posedge reset)
@@ -50,7 +54,9 @@ module ID_EX(
     immout_ID_EX        <= 0;   
     funct3_ID_EX        <= 0;    
     funct7_ID_EX        <= 0;    
-    rd_ID_EX            <= 0;         
+    rd_ID_EX            <= 0;
+    rs1_ID_EX            <= 0;
+    rs2_ID_EX            <= 0;         
     end
     else begin
     branch_ID_EX        <= branch;
@@ -67,6 +73,8 @@ module ID_EX(
     funct3_ID_EX        <= funct3;    
     funct7_ID_EX        <= funct7;  
     rd_ID_EX            <= rd; 
+    rs1_ID_EX            <= rs1; 
+    rs2_ID_EX            <= rs2; 
     end
     end
     

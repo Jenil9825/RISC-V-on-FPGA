@@ -3,7 +3,6 @@
 module EX_MEM(
     input clk,
     input reset,
-    input [31:0] pc_out_ID_EX, 
     input [31:0] alu_result,                  
     input z_flag,
     input branch_ID_EX,            
@@ -17,7 +16,6 @@ module EX_MEM(
     
     output reg [31:0] read_data2_EX_MEM,
     output reg [31:0] add_alu_out_EX_MEM,
-    output reg [31:0] pc_out_EX_MEM,
     output reg [31:0] alu_result_EX_MEM, 
     output reg branch_EX_MEM,
     output reg memread_EX_MEM,
@@ -33,7 +31,6 @@ module EX_MEM(
         if(reset) begin
             read_data2_EX_MEM  <= 0;
             add_alu_out_EX_MEM <= 0;
-            pc_out_EX_MEM      <= 0;
             alu_result_EX_MEM  <= 0;
             z_flag_EX_MEM      <= 0;
             branch_EX_MEM      <= 0;
@@ -46,7 +43,6 @@ module EX_MEM(
         else begin
             read_data2_EX_MEM  <= read_data2_ID_EX;
             add_alu_out_EX_MEM <= add_alu_out;
-            pc_out_EX_MEM      <= pc_out_ID_EX;
             alu_result_EX_MEM  <= alu_result;
             z_flag_EX_MEM      <= z_flag;
             branch_EX_MEM      <= branch_ID_EX;

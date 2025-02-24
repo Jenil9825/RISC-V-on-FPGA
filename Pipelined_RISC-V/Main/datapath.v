@@ -3,7 +3,7 @@
 module datapath(
     input wire clk,
     input wire reset,
-    output [3:0] out  // ✅ Changed to 'reg' to prevent multi-driven net
+    output [31:0] out
 );
 
     // Internal signals
@@ -34,9 +34,10 @@ module datapath(
     wire [31:0] immout_ID_EX;       
     wire [2:0] funct3_ID_EX;        
     wire funct7_ID_EX;
-    wire [4:0] rd_ID_EX; 
+    wire [4:0] rd_ID_EX;
+    wire [4:0] rs1_ID_EX;
+    wire [4:0] rs2_ID_EX; 
     
-    wire [31:0] pc_out_EX_MEM;
     wire [31:0] alu_result_EX_MEM;
     wire branch_EX_MEM;
     wire memread_EX_MEM;
@@ -52,6 +53,10 @@ module datapath(
     wire [31:0] alu_result_MEM_WB;
     wire [4:0] rd_MEM_WB;
     wire memtoreg_MEM_WB;
+    wire regwrite_MEM_WB;
+    
+    wire [31:0] I1, I2;
+    wire [1:0] ForwardA, ForwardB;
     
     
     // Control signals
@@ -64,7 +69,6 @@ module datapath(
     assign opcode = instruction_IF_ID[6:0];
     assign rs1 = instruction_IF_ID[19:15];
     assign rs2 = instruction_IF_ID[24:20];
-    assign rd = instruction_IF_ID[11:7]; 
     assign funct3 = instruction_IF_ID[14:12];
     assign funct7 = instruction_IF_ID[30];
 //    clock_slow ck(
@@ -107,7 +111,9 @@ module datapath(
         .immout(immout),
         .funct3(funct3),
         .funct7(funct7),
-        .rd(rd),
+        .rd(instruction_IF_ID[11:7]),
+        .rs1(rs1),
+        .rs2(rs2),
         .branch_ID_EX(branch_ID_EX),
         .memread_ID_EX(memread_ID_EX),
         .memtoreg_ID_EX(memtoreg_ID_EX),
@@ -121,14 +127,15 @@ module datapath(
         .immout_ID_EX(immout_ID_EX),
         .funct3_ID_EX(funct3_ID_EX),
         .funct7_ID_EX(funct7_ID_EX),
-        .rd_ID_EX(rd_ID_EX)
+        .rd_ID_EX(rd_ID_EX),
+        .rs1_ID_EX(rs1_ID_EX),
+        .rs2_ID_EX(rs2_ID_EX)
     );
     
     //EX_MEM
     EX_MEM ex_mem (
         .clk(clk),
         .reset(reset),
-        .pc_out_ID_EX(pc_out_ID_EX),
         .alu_result(alu_result),
         .z_flag(z_flag),
         .branch_ID_EX(branch_ID_EX),
@@ -139,7 +146,6 @@ module datapath(
         .rd_ID_EX(rd_ID_EX),
         .add_alu_out(add_alu_out),
         .add_alu_out_EX_MEM(add_alu_out_EX_MEM),
-        .pc_out_EX_MEM(pc_out_EX_MEM),
         .alu_result_EX_MEM(alu_result_EX_MEM),
         .branch_EX_MEM(branch_EX_MEM),
         .memread_EX_MEM(memread_EX_MEM),
@@ -148,7 +154,7 @@ module datapath(
         .regwrite_EX_MEM(regwrite_EX_MEM),
         .z_flag_EX_MEM(z_flag_EX_MEM),
         .rd_EX_MEM(rd_EX_MEM),
-        .read_data2_ID_EX(read_data2_ID_EX),
+        .read_data2_ID_EX(I2),
         .read_data2_EX_MEM(read_data2_EX_MEM)
     );
     
@@ -157,20 +163,23 @@ module datapath(
         .clk(clk),
         .reset(reset),
         .read_data(read_data),
+        .regwrite_EX_MEM(regwrite_EX_MEM),
         .alu_result_EX_MEM(alu_result_EX_MEM),
         .rd_EX_MEM(rd_EX_MEM),
         .memtoreg_EX_MEM(memtoreg_EX_MEM),
+        .regwrite_MEM_WB(regwrite_MEM_WB),
         .read_data_MEM_WB(read_data_MEM_WB),
         .alu_result_MEM_WB(alu_result_MEM_WB),
         .rd_MEM_WB(rd_MEM_WB),
         .memtoreg_MEM_WB(memtoreg_MEM_WB)
         );
         
-        
+         assign rd = rd_MEM_WB; 
+
     // Instruction Memory
     instruction_memory imem (
         .reset(reset),
-        .pc_out(pc_out_IF_ID),
+        .pc_out(pc_out),
         .instruction(instruction)
     );
 
@@ -188,7 +197,7 @@ module datapath(
     );
 
     // Immediate Generator
-    imm_gen imm_gen (
+    imm_gen immgen (
         .instruction(instruction_IF_ID),
         .immout(immout)
     );
@@ -209,10 +218,10 @@ module datapath(
     registers reg_file (
         .reset(reset),
         .clk(clk),
-        .reg_write(regwrite),
-        .read_reg1(instruction[19:15]),
-        .read_reg2(instruction[24:20]),
-        .write_reg(instruction[6:0]),
+        .reg_write(regwrite_MEM_WB),
+        .read_reg1(instruction_IF_ID[19:15]),
+        .read_reg2(instruction_IF_ID[24:20]),
+        .write_reg(rd_MEM_WB),
         .write_data(write_data),
         .read_data1(read_data1),
         .read_data2(read_data2)
@@ -228,8 +237,8 @@ module datapath(
 
     // ALU
     alu alu (
-        .I1(read_data1_ID_EX),
-        .I2(alu_input),
+        .I1(I1),
+        .I2(I2),
         .alu_ctr(alu_control),
         .alu_out(alu_result),
         .n_flag(n_flag),
@@ -274,6 +283,36 @@ module datapath(
         .sel(c),
         .mux_out(pc_in) 
     );
-    assign out = alu_result_MEM_WB [3:0];
+    
+    //MUX for Forwarding Unit
+    mux_4 mux_alu_1 (
+        .a(read_data1_ID_EX),
+        .b(write_data),
+        .c(alu_result_EX_MEM),
+        .sel(ForwardA),
+        .mux_out(I1)
+     );
+     
+     mux_4 mux_alu_2 (
+        .a(read_data2_ID_EX),
+        .b(alu_result_EX_MEM),
+        .c(write_data),
+        .sel(ForwardB),
+        .mux_out(I2)
+     );
+
+       // Forwarding Unit
+     forwarding_unit forward_unit (
+        .ID_EX_Rs1(rs1_ID_EX),
+        .ID_EX_Rs2(rs2_ID_EX),
+        .EX_MEM_Rd(rd_EX_MEM),
+        .MEM_WB_Rd(rd_MEM_WB),
+        .EX_MEM_RegWrite(regwrite_EX_MEM),
+        .MEM_WB_RegWrite(regwrite_MEM_WB),
+        .ForwardA(ForwardA),
+        .ForwardB(ForwardB)
+    );
+     
+    assign out = alu_result_MEM_WB [31:0];
 
 endmodule

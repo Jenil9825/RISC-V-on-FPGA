@@ -4,7 +4,7 @@
 module TOP(
     input reset, 
     input clk_signal,  // 50 MHz input clock
-    output [3:0] out_1
+    output [31:0] out_1
    
 );
     wire clock;

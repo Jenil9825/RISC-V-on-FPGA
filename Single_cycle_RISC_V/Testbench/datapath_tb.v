@@ -4,7 +4,7 @@
 module datapath_tb();
     reg clk;
     reg reset;
-    wire [3:0] out;
+    wire [31:0] out;
     datapath uut (
         .clk(clk),
         .reset(reset),
@@ -19,7 +19,7 @@ module datapath_tb();
     initial begin
    reset = 1;
 
-    #136;
+    #50
     reset = 0;
     #1000;
         $finish;

@@ -4,7 +4,7 @@
 module TOP_tb();
     reg clk_signal;
     reg reset;
-    wire [3:0] out_1;
+    wire [31:0] out_1;
     TOP uut (
         .clk_signal(clk_signal),
         .reset(reset),
@@ -19,7 +19,7 @@ module TOP_tb();
     initial begin
    reset = 1;
 
-    #100;
+    #10
 //    reset = 1;
 //    #50;
 //    reset = 0;

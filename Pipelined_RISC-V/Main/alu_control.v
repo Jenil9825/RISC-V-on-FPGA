@@ -1,10 +1,10 @@
 `timescale 1ns / 1ps
 
 module alu_control (
-    input wire [1:0] aluop,    // ALU Operation control
-    input wire [2:0] funct3,   // Function 3 bits from instruction
-    input wire funct7,   // Function 7 bits from instruction
-    output reg [3:0] alu_ctr   // ALU control signal
+    input wire [1:0] aluop,
+    input wire [2:0] funct3,
+    input wire funct7,
+    output reg [3:0] alu_ctr 
 );
     initial begin
     alu_ctr <= 32'b0;
@@ -25,7 +25,7 @@ always @(*) begin
         end
 
         2'b10: begin // R-Type Instructions
-            case ({funct7, funct3}) // ✅ FIXED: Using `funct7[5]` as a single-bit
+            case ({funct7, funct3})
                 4'b0000: alu_ctr <= 4'b0010; // ADD
                 4'b1000: alu_ctr <= 4'b0110; // SUB
                 4'b0111: alu_ctr <= 4'b0000; // AND
