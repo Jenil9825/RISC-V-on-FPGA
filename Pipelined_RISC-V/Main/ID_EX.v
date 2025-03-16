@@ -20,6 +20,10 @@ module ID_EX(
     input [4:0] rd,
     input [4:0] rs1,
     input [4:0] rs2,
+    input [31:0] pc_out_reg,
+    input [1:0] pc_sel,
+    output reg [1:0] pc_sel_ID_EX,
+    output reg [31:0] pc_out_reg_ID_EX,
     output reg branch_ID_EX,              
     output reg memread_ID_EX,             
     output reg memtoreg_ID_EX,            
@@ -56,7 +60,9 @@ module ID_EX(
     funct7_ID_EX        <= 0;    
     rd_ID_EX            <= 0;
     rs1_ID_EX            <= 0;
-    rs2_ID_EX            <= 0;         
+    rs2_ID_EX            <= 0;    
+    pc_out_reg_ID_EX    <=0;     
+    pc_sel_ID_EX             <=0;
     end
     else begin
     branch_ID_EX        <= branch;
@@ -75,6 +81,8 @@ module ID_EX(
     rd_ID_EX            <= rd; 
     rs1_ID_EX            <= rs1; 
     rs2_ID_EX            <= rs2; 
+    pc_out_reg_ID_EX    <= pc_out_reg;
+    pc_sel_ID_EX        <=pc_sel;
     end
     end
     

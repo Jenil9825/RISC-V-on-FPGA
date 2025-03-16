@@ -3,13 +3,13 @@
 module data_mem (
     input wire clk,
     input wire reset,
-    input wire memwrite,
-    input wire memread,
+    input wire memwrite,      
+    input wire memread,       
     input wire [31:0] address,
     input wire [31:0] write_data,
-    output reg [31:0] read_data
+    output reg [31:0] read_data 
 );
-    // Memory size: 32 words (32-bit each)
+
     reg [31:0] memory [0:31];
 
     integer i;

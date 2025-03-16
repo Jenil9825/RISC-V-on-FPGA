@@ -7,7 +7,7 @@ module datapath(
 );
 
     // Internal signals
-    wire [31:0] pc_out, pc_in, add_alu_out, add_pc_out;
+    wire [31:0] pc_out, pc_in, pc_out_reg, add_pc_out;
     wire [31:0] instruction;
     wire [31:0] read_data1, read_data2, immout;
     wire [31:0] alu_input, write_data, read_data;
@@ -17,7 +17,8 @@ module datapath(
     wire [6:0] opcode;
     wire funct7;
     wire [2:0] funct3;
-    
+    wire [1:0] pc_sel;
+//    wire jal;
     // Piplined Internal Signals
     wire [31:0] pc_out_IF_ID, instruction_IF_ID;
     
@@ -37,7 +38,11 @@ module datapath(
     wire [4:0] rd_ID_EX;
     wire [4:0] rs1_ID_EX;
     wire [4:0] rs2_ID_EX; 
+    wire [31:0] pc_out_reg_ID_EX;
+    wire [1:0] pc_sel_ID_EX;
     
+    wire [31:0] pc_out_EX_MEM;
+    wire [31:0] immout_EX_MEM;
     wire [31:0] alu_result_EX_MEM;
     wire branch_EX_MEM;
     wire memread_EX_MEM;
@@ -47,8 +52,10 @@ module datapath(
     wire regwrite_EX_MEM;
     wire z_flag_EX_MEM;
     wire [4:0] rd_EX_MEM; 
-    wire [31:0] add_alu_out_EX_MEM;
-    
+//    wire [31:0] add_alu_out_EX_MEM;
+    wire [4:0] rs1_EX_MEM;
+    wire  [1:0] pc_sel_EX_MEM;
+    wire [31:0] pc_out_reg_EX_MEM;
     wire [31:0] read_data_MEM_WB;
     wire [31:0] alu_result_MEM_WB;
     wire [4:0] rd_MEM_WB;
@@ -129,7 +136,11 @@ module datapath(
         .funct7_ID_EX(funct7_ID_EX),
         .rd_ID_EX(rd_ID_EX),
         .rs1_ID_EX(rs1_ID_EX),
-        .rs2_ID_EX(rs2_ID_EX)
+        .rs2_ID_EX(rs2_ID_EX),
+        .pc_out_reg_ID_EX(pc_out_reg_ID_EX),
+        .pc_out_reg(pc_out_reg),
+        .pc_sel(pc_sel),
+        .pc_sel_ID_EX(pc_sel_ID_EX)
     );
     
     //EX_MEM
@@ -144,8 +155,17 @@ module datapath(
         .memwrite_ID_EX(memwrite_ID_EX),
         .regwrite_ID_EX(regwrite_ID_EX),
         .rd_ID_EX(rd_ID_EX),
-        .add_alu_out(add_alu_out),
-        .add_alu_out_EX_MEM(add_alu_out_EX_MEM),
+        .pc_out_ID_EX(pc_out_ID_EX),
+        .immout_ID_EX(immout_ID_EX),
+        .rs1_ID_EX(rs1_ID_EX),
+        .pc_sel_ID_EX(pc_sel_ID_EX),
+        
+//        .add_alu_out(add_alu_out),
+//        .add_alu_out_EX_MEM(add_alu_out_EX_MEM),
+        .pc_out_EX_MEM(pc_out_EX_MEM),
+        .immout_EX_MEM(immout_EX_MEM),
+        .rs1_EX_MEM(rs1_EX_MEM),
+        .pc_sel_EX_MEM(pc_sel_EX_MEM),
         .alu_result_EX_MEM(alu_result_EX_MEM),
         .branch_EX_MEM(branch_EX_MEM),
         .memread_EX_MEM(memread_EX_MEM),
@@ -155,7 +175,9 @@ module datapath(
         .z_flag_EX_MEM(z_flag_EX_MEM),
         .rd_EX_MEM(rd_EX_MEM),
         .read_data2_ID_EX(I2),
-        .read_data2_EX_MEM(read_data2_EX_MEM)
+        .read_data2_EX_MEM(read_data2_EX_MEM),
+        .pc_out_reg_ID_EX(pc_out_reg_ID_EX),
+        .pc_out_reg_EX_MEM(pc_out_reg_EX_MEM)
     );
     
     //MEM_WB
@@ -201,19 +223,7 @@ module datapath(
         .instruction(instruction_IF_ID),
         .immout(immout)
     );
-
-    // Adders
-    add_pc pc_adder (
-        .pc_out(pc_out),
-        .add_pc_out(add_pc_out)
-    );
-
-    add branch_adder (
-        .a(pc_out_ID_EX),
-        .b(immout_ID_EX),
-        .add_out(add_alu_out)
-    );
-
+    
     // Register File
     registers reg_file (
         .reset(reset),
@@ -224,7 +234,11 @@ module datapath(
         .write_reg(rd_MEM_WB),
         .write_data(write_data),
         .read_data1(read_data1),
-        .read_data2(read_data2)
+        .read_data2(read_data2),
+        .pc_sel(pc_sel_EX_MEM),
+        .pc_out(pc_out_EX_MEM),
+//        .branch(branch_EX_MEM),
+        .pc_out_reg(pc_out_reg)
     );
 
     // ALU Input MUX
@@ -244,7 +258,8 @@ module datapath(
         .n_flag(n_flag),
         .z_flag(z_flag),
         .c_flag(c_flag),
-        .v_flag(v_flag)
+        .v_flag(v_flag),
+        .pc_sel(pc_sel)
     );
 
     // ALU Control Unit
@@ -252,6 +267,7 @@ module datapath(
         .aluop(aluop_ID_EX),
         .funct3(funct3_ID_EX),
         .funct7(funct7_ID_EX),
+        .opcode(opcode),
         .alu_ctr(alu_control)
     );
 
@@ -274,16 +290,33 @@ module datapath(
         .mux_out(write_data)
     );
 
-    wire c;
-    assign c = z_flag_EX_MEM && branch_EX_MEM;
-
-    mux mux_pc (
-        .a(add_alu_out_EX_MEM),
-        .b(add_pc_out),
-        .sel(c),
-        .mux_out(pc_in) 
+//    wire c;
+//    assign c = z_flag_EX_MEM && branch_EX_MEM;
+    
+    pc_mux mux_pc (
+//        .clk(clk),
+        .pc_current(pc_out_EX_MEM),
+        .imm_offset(immout_EX_MEM),
+        .rs1_value(rs1_EX_MEM),
+        .pc_sel(pc_sel_EX_MEM),
+        .add_pc_out(add_pc_out),
+        .pc_next(pc_in),
+        .pc_out_reg(pc_out_reg),
+        .branch(branch_EX_MEM)
     );
     
+    add pc_add (
+        .pc_in(add_pc_out),
+        .pc_out(pc_out)
+    );
+    
+//    mux mux_pc_in (
+//        .b(add_pc_out),
+//        .a(pc_jal_out),
+//        .sel(branch_EX_MEM),
+//        .mux_out(pc_in)
+//    );
+
     //MUX for Forwarding Unit
     mux_4 mux_alu_1 (
         .a(read_data1_ID_EX),
@@ -313,6 +346,6 @@ module datapath(
         .ForwardB(ForwardB)
     );
      
-    assign out = alu_result_MEM_WB [31:0];
+    assign out = alu_result_MEM_WB ;
 
 endmodule

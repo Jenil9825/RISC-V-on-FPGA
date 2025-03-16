@@ -42,7 +42,7 @@ module control_unit(
             end
             7'b0100011: begin // Store Word (SW)
                 alusrc   = 1'b1;    
-                memtoreg = 1'b1;
+                memtoreg = 1'b1;    // Store doesn't use MemtoReg
                 regwrite = 1'b0;    
                 memread  = 1'b0;    
                 memwrite = 1'b1;    
@@ -51,7 +51,7 @@ module control_unit(
             end
             7'b1100011: begin // Branch Equal (BEQ)
                 alusrc   = 1'b0;    
-                memtoreg = 1'b0;
+                memtoreg = 1'b0;    // Branch doesn't use MemtoReg
                 regwrite = 1'b0;    
                 memread  = 1'b0;    
                 memwrite = 1'b0;    
@@ -67,7 +67,7 @@ module control_unit(
                 branch   = 1'b0;    
                 aluop    = 2'b10;   
             end
-            7'b1101111: begin // Jump and Link (JAL)
+            7'b1101111, 7'b1100111: begin // Jump and Link (JAL)
                 alusrc   = 1'b1;    
                 memtoreg = 1'b0;    
                 regwrite = 1'b1;    
@@ -77,6 +77,7 @@ module control_unit(
                 aluop    = 2'b00;   
             end
             default: begin
+                // Ensure all control signals remain safe in unknown states
                 branch    = 1'b0;
                 memread   = 1'b0;
                 memtoreg  = 1'b0;

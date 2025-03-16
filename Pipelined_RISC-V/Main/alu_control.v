@@ -1,16 +1,22 @@
 `timescale 1ns / 1ps
 
 module alu_control (
-    input wire [1:0] aluop,
+    input wire [1:0] aluop, 
     input wire [2:0] funct3,
     input wire funct7,
-    output reg [3:0] alu_ctr 
+    input wire [6:0] opcode,
+    output reg [3:0] alu_ctr
 );
     initial begin
     alu_ctr <= 32'b0;
     end
     
 always @(*) begin
+             if(opcode == 7'b1101111) begin
+                alu_ctr <= 4'b1010;
+         end else if (opcode == 7'b1100111) begin
+                alu_ctr <= 4'b1011;
+         end else begin
     case (aluop)
         2'b00: alu_ctr <= 4'b0010;
         
@@ -31,11 +37,13 @@ always @(*) begin
                 4'b0111: alu_ctr <= 4'b0000; // AND
                 4'b0110: alu_ctr <= 4'b0001; // OR
                 default: alu_ctr <= 4'b0000;
+                
             endcase
         end
 
         default: alu_ctr <= 4'b0000;
     endcase
+end
 end
 
 endmodule
