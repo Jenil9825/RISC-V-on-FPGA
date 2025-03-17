@@ -16,10 +16,9 @@ module EX_MEM(
     input [4:0] rs1_ID_EX,
     input  [1:0] pc_sel_ID_EX,
     input [31:0] pc_out_reg_ID_EX,
-
 //    input [31:0] add_alu_out,
     input [31:0] read_data2_ID_EX,
-   
+
     output reg [31:0] pc_out_reg_EX_MEM,
     output reg [31:0] pc_out_EX_MEM,
     output reg [31:0] immout_EX_MEM,
