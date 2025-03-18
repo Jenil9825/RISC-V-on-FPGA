@@ -3,10 +3,9 @@
 module datapath(
     input wire clk,
     input wire reset,
-    output [3:0] out  // ✅ Changed to 'reg' to prevent multi-driven net
+    output [3:0] out
 );
 
-    // Internal signals
     wire [31:0] pc_out, pc_in, add_alu_out, add_pc_out;
     wire [31:0] instruction;
     wire [31:0] read_data1, read_data2, imm_out;
@@ -21,12 +20,7 @@ module datapath(
     wire [1:0] aluop;
     wire [3:0] alu_control;
     wire c_flag, n_flag, v_flag;
-//    clock_slow ck(
-    
-//        .clk(clk_signal),
-//        .reset(reset),
-//        .clock(clock)
-//    );
+
     // Program Counter (PC)
     pc PC (
         .clk(clk),
