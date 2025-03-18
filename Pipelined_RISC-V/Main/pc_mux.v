@@ -16,25 +16,16 @@ module pc_mux(
     input [31:0] add_pc_out,
     output reg [31:0] pc_next
 );
-    reg [2:0] a;
 //   assign pc_next = branch ? (pc_sel) ? (pc_current + imm_offset) : (add_pc_out) : add_pc_out;  
-
-reg prev_clk;
-
-always @(posedge clk or negedge clk) begin
-    prev_clk <= clk; // Store previous clock state
-end
 always @(*) begin
-        if(reset) begin a = 0; end
 //    $display("Time: %0t | pc_out_reg=%h | branch=%b | pc_sel=%b | rs1_value=%h | imm_offset=%h", 
 //              $time, pc_out_reg, branch, pc_sel, rs1_value, imm_offset);
-    if((c == 1) && (!prev_clk && clk)) begin
+    if((c == 1)) begin
         pc_next = switch_pc + 32'd4;
         switch_pc = switch_pc + 32'd4;
-
     end else if(switch) begin 
         pc_next = switch_pc;
-    end else if(pc_out_reg != 32'd0) begin
+    end else if(pc_out_reg != 32'b0) begin
         pc_next = pc_out_reg;
     end else if(branch) begin
         if(pc_sel == 2'b01) begin
