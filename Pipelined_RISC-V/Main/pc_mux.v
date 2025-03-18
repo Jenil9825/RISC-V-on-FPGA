@@ -9,17 +9,14 @@ module pc_mux(
     input [1:0] pc_sel,
     input switch,
     input c,
-    output reg [31:0] switch_pc,
-//    input [31:0] pc_out_reg_EX_MEM,
     input [31:0] pc_out_reg,
     input branch,
     input [31:0] add_pc_out,
+    output reg [31:0] switch_pc,
     output reg [31:0] pc_next
 );
-//   assign pc_next = branch ? (pc_sel) ? (pc_current + imm_offset) : (add_pc_out) : add_pc_out;  
-always @(*) begin
-//    $display("Time: %0t | pc_out_reg=%h | branch=%b | pc_sel=%b | rs1_value=%h | imm_offset=%h", 
-//              $time, pc_out_reg, branch, pc_sel, rs1_value, imm_offset);
+
+    always @(*) begin
     if((c == 1)) begin
         pc_next = switch_pc + 32'd4;
         switch_pc = switch_pc + 32'd4;
@@ -33,7 +30,6 @@ always @(*) begin
         end 
         else if(pc_sel == 2'b10) begin
             pc_next = (rs1_value + imm_offset) & 32'hFFFFFFFC; 
-//            $display("JALR Taken: pc_next = %h", pc_next);
         end
     end 
     else begin
