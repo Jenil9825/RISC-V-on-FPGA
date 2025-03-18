@@ -14,13 +14,13 @@ module registers (
     output wire [31:0] read_data1,
     output wire [31:0] read_data2,
     output reg [31:0] pc_out_reg,
-    output reg counter
+    output reg counter,
+    output reg [2:0] a
 );
 
     reg [31:0] reg_file [0:31];
     assign read_data1 = reg_file[read_reg1];
     assign read_data2 = reg_file[read_reg2];
-    reg [2:0] a;
     integer i;
 
     always @(posedge clk or posedge reset or posedge switch) begin
@@ -36,7 +36,7 @@ module registers (
             end
         end else if (switch) begin
             if(a[0] == 1'b0) begin
-            pc_out_reg <= pc_out + 32'd16;
+            pc_out_reg = pc_out + 32'd16;
             counter = 1'b1;
             end else begin counter = 1'b0; end
             a = a + 1;
@@ -55,7 +55,8 @@ module registers (
                     pc_out_reg <= 32'b0;
                 end
             endcase
-        end
+//        end else if (a % 3'b100 == 0) begin pc_out_reg <= 32'b0; end
+    end
     end
     
 endmodule
